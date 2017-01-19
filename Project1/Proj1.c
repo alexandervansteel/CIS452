@@ -4,7 +4,7 @@
 #include <pwd.h>
 #include <sys/types.h>
 
-#define _BSD_SOURCE
+//#define _BSD_SOURCE
 
 int main () {
   struct passwd *pw;
