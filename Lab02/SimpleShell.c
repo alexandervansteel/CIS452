@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 #define BUFF_LEN 1024
 
@@ -18,17 +18,17 @@ int main() {
       break;
 
     size_t len = strlen(line);
-    if (line[len - 1] == "\n")
-      line[len - 1] = "\0";
+    if (line[len - 1] == '\n')
+      line[len - 1] = '\0';
     if (strcmp(line, "exit") == 0)
       break;
 
     char *token;
-    token - strtok(line, " ");
+    token - strtok(line, ' ');
     int i = 0;
     while (token != NULL) {
       argv[i] = token;
-      token = strtok(NULL, " ");
+      token = strtok(NULL, ' ');
       i++;
     }
     argv[i] = NULL;
@@ -45,13 +45,13 @@ int main() {
         filepath[i] = '\0';
     }
 
-    int pid = forck();
+    int pid = fork();
 
     if (pid == 0) {
       execvp( filepath, argv);
       fprintf(stderr, "Child process could not execvp\n");
     } else {
-      wait4();
+      wait(NULL);
       printf("Child exited\n");
     }
   }
