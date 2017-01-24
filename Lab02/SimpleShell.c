@@ -24,18 +24,18 @@ int main() {
       break;
 
     char *token;
-    token - strtok(line, ' ');
+    token = strtok(line, " ");
     int i = 0;
     while (token != NULL) {
       argv[i] = token;
-      token = strtok(NULL, ' ');
+      token = strtok(NULL, " ");
       i++;
     }
     argv[i] = NULL;
 
     argc = i;
     for (i = 0; i < argc; i++) {
-      printf("%s\n", argc[i]);
+      printf("%s\n", argv[i]);
     }
     strcpy(filepath, path);
     strcat(filepath, argv[0]);
