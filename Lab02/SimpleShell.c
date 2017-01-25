@@ -1,58 +1,76 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+/*
+ * Alexander Vansteel
+ * Winter 2017
+ * CIS 452 Lab 02
+ * Prof Hans Dulimarta
+ * SimpleShell
+ */
 
-#define BUFF_LEN 1024
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <string.h>
+ #include <sys/types.h>
+ #include sys/wait.h>
+ #include <sys/resource.h>
+ #include <sys/time.h>
+ #include <sys/resource.h>
 
-int main() {
-  char line[BUFF_LEN];  // command line
-  char* argv[100];      // user command
-  char filepath[20];    // full file path
-  char* path = "/bin/"; // set path to bin
-  int argc;             // arg count
+ #define MAXBUF 1024
+ #define MAXARGS 256
 
-  while (1) {
-    printf("SimpleShell>> ");
+ int main() {
+   char buf[MAXBUF];
+   char* args[MAXARGS];
+   char* token;
+   pid_t pid;
+   int status = 0;
 
-    if (!fgets(line, BUFF_LEN, stdin))
-      break;
+   while (1) {
+     printf("SimpleShell>> ");
+     if (fgets(buf, MAXBUF, stdin) == NULL) {
+       printf("ERROR: Failed to get command.\n");
+     }
+     buf[strcspn(buf, "\n")] = 0;
+     if (strcmp(buf, "quit") == 0) {
+       exit(0);
+     }
 
-    size_t len = strlen(line);
-    if (line[len - 1] == '\n')
-      line[len - 1] = '\0';
-    if (strcmp(line, "exit") == 0)
-      break;
+     token = strtok(buf, " ");
+     int i = 0;
+     while (tok != NULL) {
+       char* arg = maloc(sizeof(*arg) * (strlen(token) + 1));
+       strcpy(arg, token);
+       args[i] = arg;
+       token = strtok(NULL, " ");
+       i++;
+     }
+     args[i] = NULL;
 
-    char *token;
-    token - strtok(line, ' ');
-    int i = 0;
-    while (token != NULL) {
-      argv[i] = token;
-      token = strtok(NULL, ' ');
-      i++;
-    }
-    argv[i] = NULL;
+     pid = fork();
+     if (pid < 0) {
+       printf("ERROR: Failed to fork.\n");
+     }
 
-    argc = i;
-    for (i = 0; i < argc; i++) {
-      printf("%s\n", argc[i]);
-    }
-    strcpy(filepath, path);
-    strcat(filepath, argv[0]);
+     else if (pid) {
+       struct rusage res;
+       wait3(&status, 0, &res);
 
-    for (i = 0; i < strlen(filepath); i++) {
-      if (filepath[i] == '\n')
-        filepath[i] = '\0';
-    }
+       struct timeval uTime = res.ru_utime;
+       time_t uTimeSec = uTime.tv_sec;
+       long int uTimeMicroSec = uTime.tv-usec;
+       printf("User CPU Time Usage: %ld %ldus\n", uTimeSec, uTimeMicroSec);
 
-    int pid = fork();
+       long int ics = res.ru_nivcsw;
+       printf("Involuntary Context Switches: %ls\n", ics);
+     }
 
-    if (pid == 0) {
-      execvp( filepath, argv);
-      fprintf(stderr, "Child process could not execvp\n");
-    } else {
-      wait(NULL);
-      printf("Child exited\n");
-    }
+     else {
+      if (execvp(args[0], args) < 0) {
+        printf("ERROR: Failed to create child.\n");
+      }
+      exit(status);
+     }
   }
-};
+  return 0;
+}
