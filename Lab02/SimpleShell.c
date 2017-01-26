@@ -62,7 +62,7 @@
        printf("User CPU Time Usage: %ld %ldus\n", uTimeSec, uTimeMicroSec);
 
        long int ics = res.ru_nivcsw;
-       printf("Involuntary Context Switches: %ls\n", ics);
+       printf("Involuntary Context Switches: %ld\n", ics);
      }
 
      else {
