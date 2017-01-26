@@ -11,7 +11,7 @@
  #include <unistd.h>
  #include <string.h>
  #include <sys/types.h>
- #include sys/wait.h>
+ #include <sys/wait.h>
  #include <sys/resource.h>
  #include <sys/time.h>
  #include <sys/resource.h>
@@ -38,8 +38,8 @@
 
      token = strtok(buf, " ");
      int i = 0;
-     while (tok != NULL) {
-       char* arg = maloc(sizeof(*arg) * (strlen(token) + 1));
+     while (token != NULL) {
+       char* arg = malloc(sizeof(*arg) * (strlen(token) + 1));
        strcpy(arg, token);
        args[i] = arg;
        token = strtok(NULL, " ");
@@ -58,7 +58,7 @@
 
        struct timeval uTime = res.ru_utime;
        time_t uTimeSec = uTime.tv_sec;
-       long int uTimeMicroSec = uTime.tv-usec;
+       long int uTimeMicroSec = uTime.tv_usec;
        printf("User CPU Time Usage: %ld %ldus\n", uTimeSec, uTimeMicroSec);
 
        long int ics = res.ru_nivcsw;
