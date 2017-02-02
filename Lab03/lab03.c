@@ -14,7 +14,7 @@ void sig_handler(int sigNum){
     printf("received a SIGUSR2 signal.\n");
   }
   else if (sigNum == SIGINT) {
-    printf(" received.\nThat's it, I'm shutting you down... gracefully!\n");
+    printf(" received.\nThat's it, I'm shutting you down...\n");
     if (kill(getpid(), SIGKILL) < 0) {
       perror("failed to kill child\n");
       exit(1);
