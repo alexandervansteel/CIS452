@@ -11,8 +11,8 @@
 #define MAXTHREADS 4000    // max number of threads
 
 int f_num = 0;             // number of files accessed
-int time = 0;              // total time
-pthread_mutex_t mutex_time // access to time
+int t_time = 0;              // total time
+pthread_mutex_t mutex_time; // access to time
 
 void* dispatcher_exec(void* arg);
 void* worker_exec(void* arg);
@@ -71,7 +71,7 @@ void* dispatcher_exec(void* arg){
 
     // detach worker thread and continue dispatch
     if ((status = pthread_detach(worker)) != 0){
-      fprintf(stderr, "Error detaching worker pthread %d: %s\n", status strerror(status));
+      fprintf(stderr, "Error detaching worker pthread %d: %s\n", status, strerror(status));
       exit(1);
     }
 
@@ -99,7 +99,7 @@ void* worker(void* arg){
 
   // lock time to ensure only one thread modifies it at a time
   pthread_mutex_lock(&mutex_time);
-  time += w_time;
+  t_time += w_time;
   pthread_mutex_unlock(&mutex_time);
 
   return NULL;
@@ -107,7 +107,7 @@ void* worker(void* arg){
 
 void print_status(int sig_num){
   printf("\nFiles Found:\t%d\n", f_num);
-  float avg_time = (float)time/(float)f_num;
-  printf("Averate Time:\t%f sec\n", time);
+  float avg_time = (float)t_time/(float)f_num;
+  printf("Averate Time:\t%f sec\n", avg_time);
   exit(0);
 }
