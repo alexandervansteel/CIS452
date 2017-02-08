@@ -36,7 +36,7 @@ int main(){
     exit(1);
   }
 
-  pthread_mutex_distroy(&mutex_time);
+  pthread_mutex_destroy(&mutex_time);
 
   return 0;
 }
@@ -81,7 +81,7 @@ void* dispatcher_exec(void* arg){
   return arg;
 }
 
-void* worker(void* arg){
+void* worker_exec(void* arg){
   char* f_name = (char*) arg;
   int w_time = 0;
 
@@ -108,6 +108,6 @@ void* worker(void* arg){
 void print_status(int sig_num){
   printf("\nFiles Found:\t%d\n", f_num);
   float avg_time = (float)t_time/(float)f_num;
-  printf("Averate Time:\t%f sec\n", avg_time);
+  printf("Average Time:\t%f sec\n", avg_time);
   exit(0);
 }
