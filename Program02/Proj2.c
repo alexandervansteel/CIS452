@@ -15,10 +15,10 @@ int main(){
   pipe(ab), pipe(bc);
 
   // handle ^C
-  signal(SIGINT, resume_program);
+  //signal(SIGINT, resume_program);
 
   int MAX;
-  printf("Enter the byte size: ");
+  fprintf(stdout, "Enter the byte size: ");
   scanf("%d", &MAX);
   MAX++;
 
@@ -171,7 +171,7 @@ int main(){
           // convert temp back to the proper char and set result[j]
           buf[j] = temp + '0';
         }
-        strtok(buf, "\0");
+        buf[MAX] = '\0';
         fprintf(stdout, "%s\n  %s\n\n", line, buf);
         fprintf(stderr, "%s\n", buf);
       }
