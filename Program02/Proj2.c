@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#define MAX 64
+//#define MAX 64
 
 void sum(char bin1[], char bin2[], char result[]);
 
@@ -11,8 +11,12 @@ int main(){
   pid_t pid[3];
   int ab[2], bc[2], n;
   pipe(ab), pipe(bc);
-  FILE *fp;
-  char* buf = (char*)malloc(sizeof(char)*MAX);
+
+  int MAX;
+  printf("Enter the byte size: ");
+  scanf("%d", &MAX);
+  MAX++;
+
 
   // Child A Complementor
   pid[0] = fork();
@@ -25,20 +29,33 @@ int main(){
       close(bc[n]);
     }
 
+    FILE* fp;
+    char* buf = (char*)malloc(sizeof(char)*MAX);
+
     if ((fp = fopen("8-input_B.dat", "r")) == NULL){
       perror("ERROR: fopen in Complementor Child\n");
       exit(1);
     }
     while (fgets(buf, MAX, fp) != NULL){
-      // creates the complement of the binary representation as a string
-      while (*buf){
-        *buf++ ^= 1;
+      if (strlen(buf) == MAX-1){
+        strtok(buf, "\n");    // remove trailing \n from fgets
+        //fprintf(stderr, "From file in child a: %s\n", buf);
+
+        // creates the complement of the binary representation as a string
+        char* s = buf;
+        while (*s){
+          *s++ ^= 1;
+        }
+
+        //fprintf(stderr, "Sending from child a: %s\n", buf);
+
+        write(STDOUT_FILENO, (const void*)buf, (size_t)strlen(buf)+1);
       }
-      write(STDOUT_FILENO, (const void*)buf, (size_t)strlen(buf)+1);
+      memset(buf, '\0', strlen(buf));
     }
-    // quit so your child doesn't end up in the main program
     free(buf);
     fclose(fp);
+    close(ab[1]);
     exit(0);
   }
 
@@ -55,23 +72,36 @@ int main(){
       close(bc[n]);
     }
 
+    char* buf = (char*)malloc(sizeof(char)*MAX);
+
     int i;
-    while (fgets(buf, MAX, STDIN_FILENO) != NULL){
-      // adds 1 to make 2s Complement
-      for (i = MAX-1; i > -1; i--){
-        if (buf[i] == '\0'){  // ignore if NULL character
-          continue;
+    while (fgets(buf, MAX, stdin) != NULL){
+      strtok(buf, "\n");    // remove trailing \n from fgets
+      if (strlen(buf) == MAX-1){
+        fprintf(stderr, "Comming into child b: %s\n", buf);
+
+        // adds 1 to make 2s Complement
+        for (i = sizeof(buf); i >= 0; i--){
+          if (buf[i] == '\0'){  // ignore if NULL character
+            continue;
+          }
+          if (buf[i] == '0'){
+            buf[i] = '1';        // flips first 0
+            break;               // exits for loop
+          } else {
+            buf[i] = '0';        // flips any 1 to simulate adding
+          }
         }
-        if (buf[i] == '0'){    // flips the first 0
-          buf[i] = '1';        // exits for loop
-          break;
-        } else {
-          buf[i] = '0';        // flips any 1 to simulate adding
-        }
+
+        fprintf(stderr, "Sending to child c: %s\n", buf);
+
+        write(STDOUT_FILENO, (const void*)buf, (size_t)strlen(buf)+1);
       }
-      write(STDOUT_FILENO, (const void*)buf, (size_t)strlen(buf)+1);
+      memset(buf, '\0', MAX);
     }
     free(buf);
+    close(ab[0]);
+    close(bc[1]);
     exit(0);
   }
 
@@ -86,30 +116,43 @@ int main(){
       close(bc[n]);
     }
 
+    FILE* fp;
     if ((fp = fopen("8-input_A.dat", "r")) == NULL){
       perror("ERROR: fopen in Adder Child\n");
       exit(1);
     }
+    char* buf = (char*)malloc(sizeof(char)*MAX);
     char* fbuf = (char*)malloc(sizeof(char)*MAX);
     char* result = (char*)malloc(sizeof(char)*MAX);
-    while (fgets(fbuf, MAX, fp) != NULL){
+    while ((fgets(fbuf, MAX, fp) != NULL) && (fgets(buf, MAX, stdin) != NULL)){
+
+      strtok(fbuf, "\n");
+      strtok(buf, "\n");
+
       sum(buf, fbuf, result);
-      printf("%s + %s = %s\n", buf, fbuf, result);
+      fprintf(stdout, "%s + %s = %s\n", buf, fbuf, result);
+
+      fprintf(stderr, "\nfrom stderr %s + %s = %s\n******\n", buf, fbuf, result);
+
+      memset(buf, '\0', MAX);
+      memset(fbuf, '\0', MAX);
     }
     fclose(fp);
     free(result);
     free(fbuf);
     free(buf);
+    close(bc[0]);
     exit(0);
   }
 
-  // Only the parent will be running outside of those if statements.
-  // Essential: close all other pipes and copies of pipes
+  // Parent
+  // close all other pipes and copies of pipes
   for(n=0; n<2; n++){
     close(ab[n]);
     close(bc[n]);
   }
 
+  // report close status
   for (n=0; n<3; n++){
     int status;
     waitpid(pid[n], &status, 0);
