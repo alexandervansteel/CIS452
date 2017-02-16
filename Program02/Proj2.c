@@ -6,7 +6,7 @@
 
 //#define MAX 64
 
-void exit_program(int);
+void resume_program(int);
 
 
 int main(){
@@ -15,7 +15,7 @@ int main(){
   pipe(ab), pipe(bc);
 
   // handle ^C
-  signal(SIGINT, exit_program);
+  signal(SIGINT, resume_program);
 
   int MAX;
   printf("Enter the byte size: ");
@@ -37,7 +37,7 @@ int main(){
     FILE* fp;
     char* buf = malloc(sizeof(char)*MAX);
 
-    if ((fp = fopen("8-input_B.dat", "r")) == NULL){
+    if ((fp = fopen("input_B.dat", "r")) == NULL){
       perror("ERROR: fopen in Complementor Child\n");
       exit(1);
     }
@@ -124,7 +124,7 @@ int main(){
 
     int carry, temp, j, num1, num2;
     FILE* fp;
-    if ((fp = fopen("8-input_A.dat", "r")) == NULL){
+    if ((fp = fopen("input_A.dat", "r")) == NULL){
       perror("ERROR: fopen in Adder Child\n");
       exit(1);
     }
@@ -136,7 +136,7 @@ int main(){
     while (fgets(buf, MAX, stdin) != NULL){
       if (strlen(buf) == MAX-1){
         strtok(buf, "\n");
-        fprintf(stderr, "  %s\n", buf);
+        fprintf(stdout, "  %s\n", buf);
 
         // load number in from vector table
         while (strlen(fbuf) != MAX){
@@ -145,7 +145,7 @@ int main(){
           }
         }
         strtok(fbuf, "\n");
-        fprintf(stderr, "+ %s\n", fbuf);
+        fprintf(stdout, "+ %s\n", fbuf);
 
         carry = 0;
         for(j = MAX -1; j >= 0; j--){
@@ -173,6 +173,7 @@ int main(){
         }
         strtok(buf, "\0");
         fprintf(stdout, "%s\n  %s\n\n", line, buf);
+        fprintf(stderr, "%s\n", buf);
       }
       memset(buf, '\0', MAX);
       memset(fbuf, '\0', MAX);
@@ -196,12 +197,12 @@ int main(){
   for (n=0; n<3; n++){
     int status;
     waitpid(pid[n], &status, 0);
-    //printf("Child %d exited with status %d\n", n, WEXITSTATUS(status));
+    //fprintf(stderr, "Child %d exited with status %d\n", n, WEXITSTATUS(status));
   }
 
   return 0;
 }
 
-void exit_program(sig_num){
+void resume_program(sig_num){
 
 }
