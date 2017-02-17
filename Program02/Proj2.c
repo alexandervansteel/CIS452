@@ -148,7 +148,7 @@ int main(){
         fprintf(stdout, "+ %s\n", fbuf);
 
         carry = 0;
-        for(j = MAX -1; j >= 0; j--){
+        for(j = MAX -2; j >= 0; j--){
           // Convert 1 char from each array to int
           num1 = fbuf[j] - '0';
           num2 = buf[j] - '0';
