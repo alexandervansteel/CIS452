@@ -11,83 +11,83 @@
 #define BUFSIZE 256
 #define SEGSIZE 4096
 
-// control c signal handler
-void exitProgram(int);
+// ^C signal handler
+void exit_program(int);
 
-int main () {
+int main (){
 
   int shmId, *p, p1;
-  char *shmPtr, *mainPointer, *reader[2];
+  char *shmPtr, *m_ptr, *reader[2];
 
   // install control c signal handler
-  signal(SIGINT, exitProgram);
+  signal(SIGINT, exit_program);
 
   // generate shared key
   key_t key = ftok("/tmp", 7);
 
   // create shared M segment
-  if ((shmId = shmget(key, SEGSIZE, IPC_CREAT|S_IRUSR|S_IWUSR)) < 0) {
-    perror ("i can't get no..\n");
-    exit (1);
+  if ((shmId = shmget(key, SEGSIZE, IPC_CREAT|S_IRUSR|S_IWUSR)) < 0){
+    perror("ERROR: shmget\n");
+    exit(1);
   }
 
   // attach shared M segment to data space
-  if ((shmPtr = shmat(shmId, 0, 0)) == (void*) -1) {
-    perror ("can't attach\n");
-    exit (1);
+  if ((shmPtr = shmat(shmId, 0, 0)) == (void*) -1){
+    perror("ERROR: shmat\n");
+    exit(1);
   }
 
 
-  while(1) {
+  while (1){
 
     // get copy of pointer to shared M space
     p = (int*)shmPtr;
 
     // get next place in shared M space
     // writer should be pointing here
-    mainPointer = shmPtr + sizeof(int) * 2;
+    m_ptr = shmPtr + sizeof(int) * 2;
 
     // save off this pointer
-    reader[0] = mainPointer;
+    reader[0] = m_ptr;
 
     // print output from where writer was pointing
-    printf("Here's what we read: %s\n", reader[0]);
+    printf("Message Received: %s\n", reader[0]);
 
     // pointer arithmetic to move to next spot in M
-    mainPointer += *p++;
+    m_ptr += *p++;
 
     // save off this pointer
-    reader[1] = mainPointer;
+    reader[1] = m_ptr;
 
     //
-    sprintf(mainPointer, "0");
+    sprintf(m_ptr, "0");
 
     // must get from writer first time
-    sscanf(mainPointer, "%d", &p1);
+    sscanf(m_ptr, "%d", &p1);
 
     // as long shared M still exists and writer still wants to go
-    while (!p1) {
-      sscanf(mainPointer, "%d", &p1);
+    while (!p1){
+      sscanf(m_ptr, "%d", &p1);
     }
 
   }
 
   // detach shared M segment
-  if (shmdt (shmPtr) < 0) {
-    perror ("just can't let go\n");
+  if (shmdt(shmPtr) < 0){
+    perror ("ERROR: shmdt\n");
     exit (1);
   }
 
   // remove shared M segment
-  if (shmctl (shmId, IPC_RMID, 0) < 0) {
-    perror ("can't deallocate\n");
+  if (shmctl(shmId, IPC_RMID, 0) < 0){
+    perror ("ERROR: shmctl\n");
     exit(1);
   }
 
   exit(0);
 }
 
-void exitProgram(int sigNum) {
-  printf("...reader all done for today.\n");
+void exit_program(int sigNum){
+  printf("Closing reader process.\n");
   exit(0);
 }

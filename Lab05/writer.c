@@ -11,10 +11,10 @@
 #define BUFSIZE 256
 #define SEGSIZE 4096
 
-// control c signal handler
-void exitProgram(int);
+// ^C signal handler
+void exit_program(int);
 
-int main () {
+int main (){
 
   int shmId;
   char *shmPtr;
@@ -25,86 +25,86 @@ int main () {
   key_t key = ftok("/tmp", 7);
 
   // install control c signal handler
-  signal(SIGINT, exitProgram);
+  signal(SIGINT, exit_program);
 
   // create shared M segment
-  if ((shmId = shmget(key, SEGSIZE, IPC_CREAT|S_IRUSR|S_IWUSR)) < 0) {
-    perror ("i can't get no..\n");
-    exit (1);
+  if ((shmId = shmget(key, SEGSIZE, IPC_CREAT|S_IRUSR|S_IWUSR)) < 0){
+    perror("ERROR: shmget\n");
+    exit(1);
   }
 
   // attach shared M segment to data space
-  if ((shmPtr = shmat(shmId, 0, 0)) == (void*) -1) {
-    perror ("can't attach\n");
-    exit (1);
+  if ((shmPtr = shmat(shmId, 0, 0)) == (void*) -1){
+    perror ("ERROR: shmat\n");
+    exit(1);
   }
 
-  char *pointer1, *pointer2, *mainPointer;
-  int memAddress[2], mem1, mem2;
-  while(1) {
+  char *ptr1, *ptr2, *m_ptr;
+  int mem_addr[2], mem1, mem2;
+  while (1){
 
     // put input into shared M
     printf("Enter shared message: ");
     fgets(buf, BUFSIZE, stdin);
 
     // move pointer into shared data
-    mainPointer = shmPtr + sizeof(memAddress);
+    m_ptr = shmPtr + sizeof(mem_addr);
 
     // initialize M address size
-    memAddress[0] = 32;
+    mem_addr[0] = 32;
 
     // return buffer string where pointer
-    sprintf(mainPointer, buf);
+    sprintf(m_ptr, "%s", buf);
 
     // move pointer M Address size
-    mainPointer += memAddress[0];
+    m_ptr += mem_addr[0];
 
     // save off first pointer
-    pointer1 = mainPointer;
+    ptr1 = m_ptr;
 
     // designate next M Address, with blank string
-    memAddress[1] = sprintf(mainPointer, "1") + 1;
+    mem_addr[1] = sprintf(m_ptr, "1") + 1;
 
     // move pointer for next M Address
-    mainPointer += memAddress[1];
+    m_ptr += mem_addr[1];
 
     // save off second pointer
-    pointer2 = mainPointer;
+    ptr2 = m_ptr;
 
     // set pointer back to blank string
-    sprintf(mainPointer, "1");
+    sprintf(m_ptr, "1");
 
     // return shared memory pointer
-    memcpy(shmPtr, &memAddress, sizeof(memAddress));
+    memcpy(shmPtr, &mem_addr, sizeof(mem_addr));
 
     // get input from user for first time
-    sscanf(pointer1, "%d", &mem1);
-    sscanf(pointer2, "%d", &mem2);
+    sscanf(ptr1, "%d", &mem1);
+    sscanf(ptr2, "%d", &mem2);
 
     // continue to get input from user
-    while (mem1 && mem2) {
-      sscanf(pointer1, "%d", &mem1);
-      sscanf(pointer2, "%d", &mem2);
+    while (mem1 && mem2){
+      sscanf(ptr1, "%d", &mem1);
+      sscanf(ptr2, "%d", &mem2);
     }
 
   }
 
   // detach shared M segment
-  if (shmdt (shmPtr) < 0) {
-    perror ("just can't let go\n");
-    exit (1);
+  if (shmdt(shmPtr) < 0){
+    perror("ERROR: shmdt\n");
+    exit(1);
   }
 
   // remove shared M segment
-  if (shmctl (shmId, IPC_RMID, 0) < 0) {
-    perror ("can't deallocate\n");
+  if (shmctl(shmId, IPC_RMID, 0) < 0){
+    perror("ERROR: shmctl\n");
     exit(1);
   }
 
   exit(0);
 }
 
-void exitProgram(int sigNum) {
-  printf("...writer all done for today.\n");
+void exit_program(int sigNum){
+  printf("Closing writer process.\n");
   exit(0);
 }

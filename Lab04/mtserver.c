@@ -82,7 +82,7 @@ void* dispatcher_exec(void* arg){
 }
 
 void* worker_exec(void* arg){
-  char* f_name = (char*) arg;
+  char* f_name = (char*) arg;  // this can cause a bug. need to allocate memory before passing into this function
   int w_time = 0;
 
   // 20% probability
