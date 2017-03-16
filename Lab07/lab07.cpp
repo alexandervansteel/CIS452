@@ -9,7 +9,7 @@ int main(){
   if (QueryPerformanceFrequency((LARGE_INTEGER *)&freq) != 0) {
     std::cout << "Freq of counter - clock ticks per sec: " << freq << std::endl;
   } else {
-    std::cout << "Uh oh...something went wrong getting freq " << std::endl;
+    std::cout << "Error getting freq " << std::endl;
   }
 
   // period of high-res counter (ms)
@@ -19,14 +19,14 @@ int main(){
   // duration of 1 mil iter empty loop
   __int64 before = 0;
   if (QueryPerformanceCounter((LARGE_INTEGER *)&before) == 0) {
-    std::cout << "Uh oh...something went wrong getting counter " << std::endl;
+    std::cout << "Error getting counter " << std::endl;
   }
   for (int i = 0; i <= 1000000; i++) {
     ;
   }
   __int64 after = 0;
   if (QueryPerformanceCounter((LARGE_INTEGER *)&after) == 0) {
-    std::cout << "Uh oh...something went wrong getting counter " << std::endl;
+    std::cout << "Error getting counter " << std::endl;
   }
 
   float loop_dur = ((float)(after - before) / (float)freq) * 1000.0;
@@ -35,15 +35,15 @@ int main(){
   // overhead of counter itself
   before = 0;
   if (QueryPerformanceCounter((LARGE_INTEGER *)&before) == 0) {
-    std::cout << "Uh oh...something went wrong getting counter " << std::endl;
+    std::cout << "Error getting counter " << std::endl;
   }
   __int64 overhead = 0;
   if (QueryPerformanceCounter((LARGE_INTEGER *)&overhead) == 0) {
-    std::cout << "Uh oh...something went wrong getting counter " << std::endl;
+    std::cout << "Error getting counter " << std::endl;
   }
   after = 0;
   if (QueryPerformanceCounter((LARGE_INTEGER *)&after) == 0) {
-    std::cout << "Uh oh...something went wrong getting counter " << std::endl;
+    std::cout << "Error getting counter " << std::endl;
   }
 
   float overhead_dur = ((float)(after - before) / (float)freq) * 1000.0;
