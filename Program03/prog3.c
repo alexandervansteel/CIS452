@@ -37,7 +37,7 @@ int main(int argc, char *argv[]){
   char *shm, *s;
   int grid_width, grid_height, num_moles, max_moles, pop_dur, hide_dur;
   pthread_t *thread;
-  struct mole_settings *settings = malloc(sizeof(int)*4);
+  struct mole_settings *settings = malloc(sizeof(struct mole_settings));
   char input;
   key = 9876;
 
@@ -53,27 +53,31 @@ int main(int argc, char *argv[]){
     settings->hide_dur = atoi(argv[6]);
   }
 
-  thread = malloc(max_moles*sizeof(pthread_t));
+  //thread = malloc(max_moles*sizeof(pthread_t));
 
-  // create shared memory space
-  if ((shmid = shmget(key, 100, IPC_CREAT|0666)) < 0){
-    perror("ERROR: shmget\n");
-    exit(1);
-  }
+  // // create shared memory space
+  // if ((shmid = shmget(key, 100, IPC_CREAT|0666)) < 0){
+  //   perror("ERROR: shmget\n");
+  //   exit(1);
+  // }
+  //
+  // // attatch shared memory
+  // if ((shm = shmat(shmid, NULL, 0)) == (char *) -1){
+  //   perror("shmat\n");
+  //   exit(1);
+  // }
 
-  // attatch shared memory
-  if ((shm = shmat(shmid, NULL, 0)) == (char *) -1){
-    perror("shmat\n");
-    exit(1);
-  }
-
+  printf("grid_height: %d\n", grid_height);
   // init the game space
   initscr();
   noecho();
   move(grid_height+1,0);
   printw("Welcome to a game of Whack-a-Mole!\nPress ESC to exit the game.\n");
-
+  refresh();
   while ((input = getchar()) != 0x1B){
+    move(grid_height+1,0);
+    printw("Welcome to a game of Whack-a-Mole!\nPress ESC to exit the game.\n");
+
     // create game board area and spawn moles into each slot
     int i, j;
     for (i = 0; i < grid_width; i++){
@@ -92,17 +96,17 @@ int main(int argc, char *argv[]){
 
   }
 
-  // detach shared M segment
-  if (shmdt(shm) < 0){
-    perror("shmdt\n");
-    exit(1);
-  }
-
-  // remove shared M segment
-  if (shmctl(shmid, IPC_RMID, 0) < 0){
-    perror("shmctl\n");
-    exit(1);
-  }
+  // // detach shared M segment
+  // if (shmdt(shm) < 0){
+  //   perror("shmdt\n");
+  //   exit(1);
+  // }
+  //
+  // // remove shared M segment
+  // if (shmctl(shmid, IPC_RMID, 0) < 0){
+  //   perror("shmctl\n");
+  //   exit(1);
+  // }
 
   endwin();
   return 0;
