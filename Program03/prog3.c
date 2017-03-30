@@ -9,16 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
 #include <pthread.h>    // compile with -lpthread
 #include <curses.h>     // compile with -lcruses
 
-#define SHSIZE 100;     // size of shared memory
+int pop_dur;            // show duration for moles
+int hide_dur;           // hide duration for moles
 
 struct mole_settings {
-  int pop_dur;          // args[0] in pthread
-  int hide_dur;         // args[1] in pthread
   int line;             // y position on screen
   int column;           // x position on screen
 };
@@ -26,7 +23,9 @@ struct mole_settings {
 // thread for the moles
 void* mole(void *param){
   struct mole_settings *settings = param;
-  move(settings->column, settings->line);
+  int line = settings->line;
+  int column = settings->column;
+  move(column,line);
   printw("a");
   return 0;
 }
@@ -49,64 +48,40 @@ int main(int argc, char *argv[]){
     grid_height = atoi(argv[2]);
     num_moles = atoi(argv[3]);
     max_moles = atoi(argv[4]);
-    settings->pop_dur = atoi(argv[5]);
-    settings->hide_dur = atoi(argv[6]);
+    pop_dur = atoi(argv[5]);
+    hide_dur = atoi(argv[6]);
   }
 
-  //thread = malloc(max_moles*sizeof(pthread_t));
-
-  // // create shared memory space
-  // if ((shmid = shmget(key, 100, IPC_CREAT|0666)) < 0){
-  //   perror("ERROR: shmget\n");
-  //   exit(1);
-  // }
-  //
-  // // attatch shared memory
-  // if ((shm = shmat(shmid, NULL, 0)) == (char *) -1){
-  //   perror("shmat\n");
-  //   exit(1);
-  // }
+  thread = malloc(max_moles*sizeof(pthread_t));
 
   printf("grid_height: %d\n", grid_height);
   // init the game space
   initscr();
   noecho();
   move(grid_height+1,0);
-  printw("Welcome to a game of Whack-a-Mole!\nPress ESC to exit the game.\n");
+  printw("Welcome to a game of Whack-a-Mole! Press ESC to exit the game.");
   refresh();
-  while ((input = getchar()) != 0x1B){
-    move(grid_height+1,0);
-    printw("Welcome to a game of Whack-a-Mole!\nPress ESC to exit the game.\n");
 
-    // create game board area and spawn moles into each slot
-    int i, j;
-    for (i = 0; i < grid_width; i++){
-      for (j = 0; j < grid_height; j++){
-        settings->column = j;
-        settings->line = i;
-        if ((status = pthread_create(thread, NULL, mole, (void*)settings)) != 0){
-          fprintf(stderr, "thread create error %d: %s\n",
-          status, strerror(status));
-          exit(1);
-        }
+  // create game board area and spawn moles into each slot
+  int i, j;
+  for (i = 0; i < grid_width; i++){
+    for (j = 0; j < grid_height; j++){
+      settings->column = j;
+      settings->line = i;
+      if ((status = pthread_create(thread, NULL, mole, (void*)settings)) != 0){
+        fprintf(stderr, "thread create error %d: %s\n",
+        status, strerror(status));
+        exit(1);
       }
     }
-
-    // TODO: add game logic for main here
-
   }
 
-  // // detach shared M segment
-  // if (shmdt(shm) < 0){
-  //   perror("shmdt\n");
-  //   exit(1);
-  // }
-  //
-  // // remove shared M segment
-  // if (shmctl(shmid, IPC_RMID, 0) < 0){
-  //   perror("shmctl\n");
-  //   exit(1);
-  // }
+  while ((input = getchar()) != 0x1B){
+    // TODO: add game logic for main here
+    move(grid_height+2,0);
+    printw("Character Entered: %c", input);
+    refresh();
+  }
 
   endwin();
   return 0;
