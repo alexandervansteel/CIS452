@@ -7,7 +7,6 @@ from multiprocessing import Process, Lock, Value
 from ctypes import c_char_p
 import curses
 
-stdscr=curses.initscr()
 
 def mole(line,column):
     stdscr.addstr(line,column,'a')
@@ -22,9 +21,10 @@ if __name__=='__main__':
     pop_dur=int(input('Enter Pop Duration in ms: '))
     hide_dur=int(input('Enter Hide Duration in ms: '))
 
-    #key=Value('c','a')
+    # this should fucking work. but it doesn't i can't figure it out
+    #key=Value('c','a') #shared memory value for user input
     key=' '
-    score=Value('i',0)
+    score=Value('i',0) #shared memory value for the score
     lock=Lock()
 
     stdscr=curses.initscr()
@@ -46,7 +46,7 @@ if __name__=='__main__':
         stdscr.addstr(grid_height+2,0,'key pressed %c' % key)
 
     # closes processes
-    for m in moles: m.join()
+    for m in moles: m.terminate()
 
     curses.echo()
     curses.nocbreak()

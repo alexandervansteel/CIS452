@@ -15,4 +15,4 @@ if __name__=='__main__':
             p.start()
 
 
-    for m in moles: m.join()
+    for m in moles: m.terminate()
