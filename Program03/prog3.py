@@ -3,51 +3,44 @@
 # Whack-a-Mole
 # Python version with Multiprocessing
 
-from multiprocessing import Process, Lock, Value
-from ctypes import c_char_p
-import curses
+import curses, random, signal, string, sys, time, threading
 
+def main(stdscr,grid_w,grid_h,moles,max_moles,pop_dur,hide_dur):
+    global screen
+    screen=stdscr
 
-def mole(line,column):
-    stdscr.addstr(line,column,'a')
-#     while True:
-#         #curses.delay_output(hide_dur) # output delay in ms
-#         stdscr.addstr(line, column, "a")
+    global semaphore
+    semaphore=threading.BoundedSemaphore(max_moles)
+
+    # set up board
+    screen.clear()
+
 
 if __name__=='__main__':
-    grid_width=int(input('Enter Grid Width: '))
-    grid_height=int(input('Enter Grid Hight: '))
-    max_moles=int(input('Enter Maximum Number of Moles: '))
-    pop_dur=int(input('Enter Pop Duration in ms: '))
-    hide_dur=int(input('Enter Hide Duration in ms: '))
+    # grid_width=int(input('Enter Grid Width: '))
+    # grid_height=int(input('Enter Grid Hight: '))
+    # max_moles=int(input('Enter Maximum Number of Moles: '))
+    # pop_dur=int(input('Enter Pop Duration in ms: '))
+    # hide_dur=int(input('Enter Hide Duration in ms: '))
 
-    # this should fucking work. but it doesn't i can't figure it out
-    #key=Value('c','a') #shared memory value for user input
-    key=' '
-    score=Value('i',0) #shared memory value for the score
-    lock=Lock()
+	grid_w=int(sys.argv[1])
+	grid_h=int(sys.argv[2])
+	moles=int(sys.argv[3])
+	max_moles=int(sys.argv[4])
+	pop_dur=int(sys.argv[5])
+	hide_dur=int(sys.argv[6])
 
-    stdscr=curses.initscr()
-    curses.noecho()
-    curses.cbreak()
+    if len(sys.argv)<7:
+		print('Incorrect number of arguments')
+		print('Usage: '+sys.argv[0]+' [width] [height] [number of moles] [max moles] '+
+			'[pop duration(ms)] [hide duration(ms)]')
+		sys.exit()
 
-    # spawn moles
-    moles=[]
-    for line in range (0, grid_height):
-        for column in range (0, grid_width):
-            p=Process(target=mole,args=(line,column))
-            moles.append(p)
-            p.start()
+    if (grid_w*grid_h)<3 or (grid_w*grid_h)<49:
+        print('Incorrect grid size: Must be between 3x1 and 7x7')
 
-    stdscr.addstr(grid_height+1,0,'Welcome to Whack-a-Mole! (Press esc to quit)')
-
-    while key != 27: # esc key
-        key=stdscr.getch()
-        stdscr.addstr(grid_height+2,0,'key pressed %c' % key)
-
-    # closes processes
-    for m in moles: m.terminate()
-
-    curses.echo()
-    curses.nocbreak()
-    curses.endwin()
+    try:
+        curses.wrapper(main,grid_w,grid_h,moles,max_moles,pop_dur,hide_dur)
+    except KeyboardInterrupt:
+        print('Received KeyboardInterrupt Exception: Exiting...')
+        sys.exit()
