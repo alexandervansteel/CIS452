@@ -17,7 +17,8 @@ def mole_t(t_num,pop_dur,hide_dur,grid_w,grid_h):
     while SIGINT:
         time.sleep(random.randrange(0,hide_dur))
         semaphore.acquire()
-        char=random.choice(string.ascii_lowercase)
+        char=' '
+        while char in thread_list: char=random.choice(string.ascii_lowercase)
         y=random.randrange(0,grid_h)
         x=random.randrange(0,grid_w)
         screen.addstr(y,x,char)
