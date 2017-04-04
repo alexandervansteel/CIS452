@@ -12,23 +12,23 @@ SIGINT=1
 def mole_t(t_num,pop_dur,hide_dur,grid_w,grid_h):
     global semaphore
     global screen
-    global thread_list
+    global char_list
+    global coord_list
 
     while SIGINT:
         time.sleep(random.randrange(0,hide_dur))
         semaphore.acquire()
         char=' '
-        while char in thread_list: char=random.choice(string.ascii_lowercase)
+        while char in char_list: char=random.choice(string.ascii_lowercase)
         y=random.randrange(0,grid_h)
         x=random.randrange(0,grid_w)
         screen.addstr(y,x,char)
-        thread_list[t_num]=char
+        char_list[t_num]=char
+        coord_list[t_num]=(y,x)
         time.sleep(random.randrange(pop_dur))
         screen.addstr(y,x,' ')
-        try:
-            thread_list=[i.replace(key,' ') for i in thread_list]
-        except:
-            pass
+        char_list[t_num]=' '
+        coord_list[t_num]=' '
         semaphore.release()
 
     print('Thread '+str(t_num+1)+' ending')
@@ -57,8 +57,10 @@ def main(stdscr,grid_w,grid_h,moles,max_moles,pop_dur,hide_dur):
     screen.refresh()
     curses.curs_set(0)
 
-    global thread_list
-    thread_list=[' ']*moles
+    global char_list
+    char_list=[' ']*moles
+    global coord_list
+    coord_list=[' ']*moles
 
     try:
         for t_num in range(moles):
@@ -75,13 +77,21 @@ def main(stdscr,grid_w,grid_h,moles,max_moles,pop_dur,hide_dur):
         key=screen.getch()
         screen.addstr(grid_h+2,0,'Key Pressed: '+chr(key))
 
-        if chr(key) in thread_list:
+        # if chr(key) in char_list:
+        #     score=score+1
+        #     screen.addstr(grid_h+3,0,'Score: '+str(score))
+        #     try:
+        #         char_list=[i.replace(key,' ') for i in char_list]
+        #     except:
+        #         pass
+
+        if chr(key) in char_list:
+            index=char_list.index(chr(key))
             score=score+1
-            screen.addstr((grid_h)+3,0,'Score: '+str(score))
-            try:
-                thread_list=[i.replace(key,' ') for i in thread_list]
-            except:
-                pass
+            screen.addstr(grid_h+3,0,'Score: '+str(score))
+            screen.addstr(int(coord_list[index][0]),int(coord_list[index][1]),' ')
+            char_list[index]=' '
+            coord_list[index]=' '
 
     global SIGINT
     SIGINT=0
