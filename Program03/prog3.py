@@ -77,14 +77,6 @@ def main(stdscr,grid_w,grid_h,moles,max_moles,pop_dur,hide_dur):
         key=screen.getch()
         screen.addstr(grid_h+2,0,'Key Pressed: '+chr(key))
 
-        # if chr(key) in char_list:
-        #     score=score+1
-        #     screen.addstr(grid_h+3,0,'Score: '+str(score))
-        #     try:
-        #         char_list=[i.replace(key,' ') for i in char_list]
-        #     except:
-        #         pass
-
         if chr(key) in char_list:
             index=char_list.index(chr(key))
             score=score+1
