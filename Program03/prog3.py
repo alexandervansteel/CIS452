@@ -20,8 +20,8 @@ def mole_t(t_num,pop_dur,hide_dur,grid_w,grid_h):
         semaphore.acquire()
         char=' '
         while char in char_list: char=random.choice(string.ascii_lowercase)
-        y=random.randrange(0,grid_h)
-        x=random.randrange(0,grid_w)
+        y=(random.randrange(0,grid_h)*2)+1
+        x=(random.randrange(0,grid_w)*4)+2
         screen.addstr(y,x,char)
         char_list[t_num]=char
         coord_list[t_num]=(y,x)
@@ -31,6 +31,7 @@ def mole_t(t_num,pop_dur,hide_dur,grid_w,grid_h):
         coord_list[t_num]=' '
         semaphore.release()
 
+    time.sleep(6)
     print('Thread '+str(t_num+1)+' ending')
 
 
@@ -40,22 +41,44 @@ def board_refresh():
         time.sleep(0.01)
 
 
+def create_board(grid_h, grid_w):
+   global screen
+   str1 = '+---'
+   str2 = '|   '
+   top_bottom= ''
+   side = ''
+
+   for w in range(grid_w):
+       top_bottom += str1
+       side += str2
+
+   top_bottom += '+'
+   side += '|'
+
+   for h in range(grid_h):
+       screen.addstr(h*2, 0, top_bottom)
+       screen.addstr((h*2)+1, 0, side)
+       screen.addstr((h*2)+2, 0, top_bottom)
+
+
 def main(stdscr,grid_w,grid_h,moles,max_moles,pop_dur,hide_dur):
+    global SIGINT
+
     global screen
     screen=stdscr
 
     global semaphore
     semaphore=threading.BoundedSemaphore(max_moles)
 
-    # signal.signal(signal.SIGINT,signal_handler)
-
     global key
     key=' '
 
     screen.clear()
-    screen.addstr(grid_h+1,0,'Welcome to Whack-a-Mole! (Press esc to exit)')
+    screen.addstr(2*grid_h+2,0,'Welcome to Whack-a-Mole! (Press esc to exit)')
     screen.refresh()
     curses.curs_set(0)
+
+    create_board(grid_h,grid_w)
 
     global char_list
     char_list=[' ']*moles
@@ -73,19 +96,34 @@ def main(stdscr,grid_w,grid_h,moles,max_moles,pop_dur,hide_dur):
     t.start()
 
     score=0
+    misses=0
     while key != 27: # esc char
         key=screen.getch()
-        screen.addstr(grid_h+2,0,'Key Pressed: '+chr(key))
+        screen.addstr(2*grid_h+3,0,'Key Pressed: '+chr(key))
 
         if chr(key) in char_list:
             index=char_list.index(chr(key))
             score=score+1
-            screen.addstr(grid_h+3,0,'Score: '+str(score))
+            screen.addstr(2*grid_h+4,0,'Score: '+str(score))
             screen.addstr(int(coord_list[index][0]),int(coord_list[index][1]),' ')
             char_list[index]=' '
             coord_list[index]=' '
+        else:
+            misses+=1
+            screen.addstr(2*grid_h+5,0,'Misses: '+str(misses))
 
-    global SIGINT
+        if misses > 9:
+            SIGINT=0
+            curses.flash()
+            curses.flushinp()
+            screen.clear()
+            screen.refresh()
+            screen.addstr(0,0,'Oh no! You have missed the mole too many times and lost the game...',curses.A_BLINK)
+            screen.addstr(1,0,'Closing game in 5 sec...',curses.A_BLINK)
+            screen.refresh()
+            time.sleep(5)
+            key=27
+
     SIGINT=0
     curses.curs_set(2)
 
