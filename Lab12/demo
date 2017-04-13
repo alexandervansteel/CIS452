@@ -1,0 +1,19 @@
+Script started on Wed Apr 12 21:29:43 2017
+[?1034hbash-3.2$ ./sp2
+.       204
+..      544
+demo    43
+sp1.c   522
+sp2     8664
+sp2.c   421
+bash-3.2$ ls -l -a
+total 48
+drwxr-xr-x   6 alexvansteel  staff   204 Apr 12 21:29 .
+drwxr-xr-x  16 alexvansteel  staff   544 Apr 12 21:15 ..
+-rw-r--r--   1 alexvansteel  staff    43 Apr 12 21:29 demo
+-rw-r--r--   1 alexvansteel  staff   522 Apr 12 21:16 sp1.c
+-rwxr-xr-x   1 alexvansteel  staff  8664 Apr 12 21:27 sp2
+-rw-r--r--   1 alexvansteel  staff   421 Apr 12 21:16 sp2.c
+bash-3.2$ exit
+
+Script done on Wed Apr 12 21:30:05 2017
